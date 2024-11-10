@@ -1,7 +1,7 @@
 {
     "name": "redvantage",
     "version": "1.0.0",
-    "description": "A CLI tool that utilizes a PG db in order to manage a business",
+    "description": "A CLI tool that utilizes a PG db in order to manage your Roles, Employees, and Departments (RED)",
     "type": "module",
     "main": "server.js",
     "scripts": {
