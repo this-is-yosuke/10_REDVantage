@@ -5,16 +5,12 @@ CREATE DATABASE redvantage_db;
 
 CREATE TABLE employees (
     id SERIAL PRIMARY KEY,
-    employee_firstName VARCHAR(100) NOT NULL
-    employee_lastName VARCHAR(100) NOT NULL
+    first_name VARCHAR(100) NOT NULL
+    last_name VARCHAR(100) NOT NULL
     role_id INT
-    department_id INT
-    role_salary INT
     manager_id INT
     FOREIGN KEY (role_id) REFERENCES roles(id)
-    FOREIGN KEY (department_id) REFERENCES departments(id)
-    FOREIGN KEY (role_salary) REFERENCES roles(salary)
-    FOREIGN KEY (manager_id) REFERENCES managers(id)
+    FOREIGN KEY (manager_id) REFERENCES employees(id)
 );
 
 CREATE TABLE departments (
@@ -24,15 +20,8 @@ CREATE TABLE departments (
 
 CREATE TABLE roles (
     id SERIAL PRIMARY KEY
-    role_name VARCHAR(100) NOT NULL
-    department_id INT
-    FOREIGN KEY (department_id) REFERENCES departments(id)
+    title VARCHAR(100) NOT NULL
     salary NUMBER NOT NULL
-);
-
-CREATE TABLE managers (
-    id SERIAL PRIMARY KEY
-    manager_fullName VARCHAR(100) NOT NULL
     department_id INT
     FOREIGN KEY (department_id) REFERENCES departments(id)
 );
