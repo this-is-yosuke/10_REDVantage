@@ -22,6 +22,6 @@ CREATE TABLE roles (
     id SERIAL PRIMARY KEY
     title VARCHAR(100) NOT NULL
     salary NUMBER NOT NULL
-    department_id INT
+    department INT
     FOREIGN KEY (department_id) REFERENCES departments(id)
 );
