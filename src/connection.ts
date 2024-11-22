@@ -9,7 +9,7 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     host: 'localhost',
     database: process.env.DB_NAME,
-    port: 8001
+    port: 5432,
 });
 
 const connectToDB = async () => {
