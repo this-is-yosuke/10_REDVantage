@@ -13,6 +13,34 @@ app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 
 // Using inquirer
+
+// Nested inquirer calls for INSERTing into departmentsqueries
+function addDepartment(): void {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "addDep",
+            message: "What is the department name you would like to add?",
+        }])
+        .then((response) => {
+            pool.query(`INSERT INTO departments (department_name) VALUES ('${response.addDep}')`, (err: Error, result: QueryResult) => {
+                if(err) {
+                    console.log(err);
+                }else if(result) {
+                    console.log(result.rows);
+                }
+                startCli();
+            })
+        })
+};
+// Nested inquirer calls for INSERTing into roles queries
+// function addRole(): void {};
+// Nested inquirer calls for INSERTing into employees queries
+// function addEmployee(): void {};
+// Nested inquirer calls for UPDATE-ing employees queries
+// function updateEmployee(): void {};
+
+// Initial inquirer call
 function startCli(): void {
 
     inquirer.prompt([
@@ -24,7 +52,7 @@ function startCli(): void {
                 'Add a role', 'Add an employee', 'Update an employee', 'Exit'],
         }])
         .then((response) => {
-            console.log(`${response.dbQuery}`);
+            // console.log(`${response.dbQuery}`);
             switch (response.dbQuery) {
                 case 'Select all departments':
                     pool.query('SELECT * FROM departments', (err: Error, result: QueryResult) => {
@@ -58,6 +86,7 @@ function startCli(): void {
                     })
                     break;
                 case 'Add a department':
+                    addDepartment();
                     break;
                 case 'Add a role':
                     break;
