@@ -34,7 +34,36 @@ function addDepartment(): void {
         })
 };
 // Nested inquirer calls for INSERTing into roles queries
-// function addRole(): void {};
+function addRole(): void {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "roleTitle",
+            message: "What role would you like to add?",
+        }
+        {
+            type: "input",
+            name: "roleSalary",
+            message: "What is the role's salary?",
+        }
+        {
+            type: "input",
+            name: "roleDepartment",
+            message: "Which department does this role belong to?",
+        }
+    ])
+    .then((response) => {
+        pool.query(`INSERT INTO roles(title, salary, department) VALUES ('${response.roleTitle}', ${response.roleSalary}, '${response.roleDepartment}')`,
+            (err: Error, result: QueryResult) => {
+                if(err){
+                    console.log(err);
+                }else if(result) {
+                    console.log(result.rowCount);
+                };
+                startCli();
+        });
+    })
+};
 // Nested inquirer calls for INSERTing into employees queries
 // function addEmployee(): void {};
 // Nested inquirer calls for UPDATE-ing employees queries
@@ -89,6 +118,7 @@ function startCli(): void {
                     addDepartment();
                     break;
                 case 'Add a role':
+                    addRole();
                     break;
                 case 'Add an employee':
                     break;
