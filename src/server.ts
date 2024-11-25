@@ -27,7 +27,7 @@ function addDepartment(): void {
                 if(err) {
                     console.log(err);
                 }else if(result) {
-                    console.log(result.rows);
+                    console.log("Data successfully entered!");
                 }
                 startCli();
             })
@@ -58,14 +58,48 @@ function addRole(): void {
                 if(err){
                     console.log(err);
                 }else if(result) {
-                    console.log(result.rowCount);
+                    console.log("Data successfully entered!");
                 };
                 startCli();
         });
     })
 };
 // Nested inquirer calls for INSERTing into employees queries
-// function addEmployee(): void {};
+function addEmployee(): void {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "firstName",
+            message: "Please enter the employee's first name.",
+        }
+        {
+            type: "input",
+            name: "lastName",
+            message: "Please enter the employee's last name.",
+        }
+        {
+            type: "input",
+            name: "roleID",
+            message: "Please enter the employee's role ID.",
+        }
+        {
+            type: "input",
+            name: "managerID",
+            message: "Please enter the employee's manager's ID.",
+        }
+    ])
+    .then((response) => {
+        pool.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ('${response.firstName}', '${response.lastName}', ${response.roleID}, ${response.managerID})`, 
+            (err: Error, result: QueryResult) => {
+                if(err){
+                    console.log(err);
+                }else if(result) {
+                    console.log("Data successfully entered.");
+                }
+                startCli();
+            });
+        });
+    };
 // Nested inquirer calls for UPDATE-ing employees queries
 // function updateEmployee(): void {};
 
@@ -76,7 +110,7 @@ function startCli(): void {
         {
             type: "list",
             name: "dbQuery",
-            message: "Pick your poison!",
+            message: "Welcome to your content management system! What would you like to do?",
             choices: ['Select all departments', 'Select all roles', 'Select all employees', 'Add a department',
                 'Add a role', 'Add an employee', 'Update an employee', 'Exit'],
         }])
@@ -121,6 +155,7 @@ function startCli(): void {
                     addRole();
                     break;
                 case 'Add an employee':
+                    addEmployee();
                     break;
                 case 'Update an employee':
                     break;
