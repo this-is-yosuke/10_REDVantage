@@ -210,7 +210,12 @@ function deleteDepartment(): void {
             choices: allDepartmentNames
         }
     ]).then((response) => {
-        pool.query(`DELETE FROM departments WHERE id=${response}`, (err: Error, result: QueryResult) => {
+        console.log(`From within deleteDepartments(), the response ${response} and the response.departmentDeletion ${response.departmentDeletion}`);
+        // response.departmentDeletion is what the user selects, their choice
+        console.log(`result.departmentDeletion.id? ${response.departmentDeletion.id}`);
+        /* response.departmentDeletion.id returns "undefined". Keep in mind that allDepartments is a string[]
+           containing only the department names and not their IDs.*/
+        pool.query(`DELETE FROM departments WHERE department_name='${response.departmentDeletion}'`, (err: Error, result: QueryResult) => {
             if(err){
                 console.log(err);
             }else if(result){
