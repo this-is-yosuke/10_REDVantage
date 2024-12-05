@@ -29,6 +29,7 @@ function addDepartment(): void {
                 }else if(result) {
                     console.log("Data successfully entered!");
                 }
+                allDepartmentNames.push(response.addDep);
                 startCli();
             })
         })
@@ -148,6 +149,7 @@ function addRole(): void {
                 if(err){
                     console.log(err);
                 }else if(result) {
+                    allRoles.push(response.roleTitle);
                     console.log("Data successfully entered!");
                 };
                 startCli();
@@ -221,6 +223,9 @@ function deleteDepartment(): void {
             }else if(result){
                 console.log("Record successfully deleted.");
             };
+            let deletedItem = allDepartmentNames.indexOf(response.departmentDeletion);
+            allDepartmentNames.splice(deletedItem, 1);
+            console.log(`allDpeartmentNames: ${allDepartmentNames}`);
             startCli();
         });
     })
@@ -235,12 +240,15 @@ function deleteRole(): void {
             choices: allRoles
         }
     ]).then((response) => {
-        pool.query(`DELETE FROM roles WHERE id=${response}`, (err: Error, result: QueryResult) => {
+        pool.query(`DELETE FROM roles WHERE title='${response.roleDeletion}'`, (err: Error, result: QueryResult) => {
             if(err){
                 console.log(err);
             }else if(result){
                 console.log("Record successfully deleted.");
-            };
+            }; 
+            let deletedItem = allRoles.indexOf(response.roleDeletion);
+            allRoles.splice(deletedItem, 1);
+            console.log(`allRoles: ${allRoles}`);
             startCli();
         });
     })
