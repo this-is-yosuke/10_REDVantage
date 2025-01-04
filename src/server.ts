@@ -205,21 +205,27 @@ function addEmployee(): void {
             console.log("First name and last name cannot be blank. Please try again.");
             startCli();
         }else{
-            /* Leaving a prompt blank does not result in NULL, but in an empty string;
-               since managerID wants INT, it throws an error. */
-            if(response.managerID === ''){response.managerID = null};
-            pool.query(`INSERT INTO employees (first_name, last_name, role_title, manager_id) VALUES ('${response.firstName}', '${response.lastName}', '${response.roleTitle}', ${response.managerID})`, 
-                (err: Error, result: QueryResult) => {
-                    if(err){
-                        console.log(err);
-                        console.log(`The manager id: ${response.managerID}, type: ${typeof response.managerID}`);
-                    }else if(result) {
-                        allEmployees.push(response.firstName + ', ' + response.lastName);
-                        
-                        console.log("Data successfully entered.");
-                    }
-                    startCli();
-                });
+            /* Implementing a cancel option, since it's already in the array */
+            if(response.roleTitle === 'cancel'){
+                console.log(`Employee creation aborted`);
+                startCli();
+            }else{
+                /* Leaving a prompt blank does not result in NULL, but in an empty string;
+                   since managerID wants INT, it throws an error. */
+                if(response.managerID === ''){response.managerID = null};
+                pool.query(`INSERT INTO employees (first_name, last_name, role_title, manager_id) VALUES ('${response.firstName}', '${response.lastName}', '${response.roleTitle}', ${response.managerID})`, 
+                    (err: Error, result: QueryResult) => {
+                        if(err){
+                            console.log(err);
+                            console.log(`The manager id: ${response.managerID}, type: ${typeof response.managerID}`);
+                        }else if(result) {
+                            allEmployees.push(response.firstName + ', ' + response.lastName);
+                            
+                            console.log("Data successfully entered.");
+                        }
+                        startCli();
+                    });
+                };
             };
         });
     };
@@ -243,6 +249,7 @@ function deleteDepartment(): void {
         /* response.departmentDeletion.id returns "undefined". Keep in mind that allDepartments is a string[]
            containing only the department names and not their IDs.*/
         if(response.departmentDeletion === "cancel"){
+            console.log(`Department deletion aborted`);
             startCli();
         }else{
             pool.query(`DELETE FROM departments WHERE department_name='${response.departmentDeletion}'`, (err: Error, result: QueryResult) => {
@@ -253,7 +260,7 @@ function deleteDepartment(): void {
                 };
                 let deletedItem = allDepartmentNames.indexOf(response.departmentDeletion);
                 allDepartmentNames.splice(deletedItem, 1);
-                console.log(`allDpeartmentNames: ${allDepartmentNames}`);
+                console.log(`allDepartmentNames: ${allDepartmentNames}`);
                 startCli();
             });
         }
@@ -270,6 +277,7 @@ function deleteRole(): void {
         }
     ]).then((response) => {
         if(response.roleDeletion === "cancel"){
+            console.log(`Role deletion aborted`);
             startCli();
         }else{
             pool.query(`DELETE FROM roles WHERE title='${response.roleDeletion}'`, (err: Error, result: QueryResult) => {
@@ -296,6 +304,7 @@ function deleteEmployee(): void {
         }
     ]).then((response) => {
         if(response.employeeDeletion === "cancel"){
+            console.log(`Employee deletion aborted`);
             startCli();
         }else{
             // I want to pull from employeeIds where the id matches the selected name
