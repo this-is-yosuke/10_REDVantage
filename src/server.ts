@@ -151,7 +151,7 @@ function addRole(): void {
         /* Neither id nor department_id work. ${resonse.roleDepartment} gives an input syntax error in the console. It's expecting an integer, but it
            recieved a string. The thing is, it needs an array to work. If presented with IDs and names, it throws an error.
            */
-          let place = allDepartmentNames.indexOf(response.roleDepartment) +1;
+          let place = allDepartmentNames.indexOf(response.roleDepartment);
         console.log(`${response.roleDepartment} is the role department.`);
         pool.query(`INSERT INTO roles(title, salary, department_id) VALUES ('${response.roleTitle}', ${response.roleSalary}, '${place}')`,
             (err: Error, result: QueryResult) => {
