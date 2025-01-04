@@ -105,6 +105,7 @@ let querryArrayE = resultE.rows;
 let allEmployees: string[] = [];
 let employeeIDs: number[] = [];
 let IDtoDelete: number; //using in the deleteEmployee method
+let currentEmployees: any[];
 for(let i = 0; i < querryArrayE.length; i++){
     allEmployees[i] = querryArrayE[i].first_name + ", " + querryArrayE[i].last_name;
     employeeIDs[i] = querryArrayE[i].id;
@@ -120,6 +121,7 @@ for(let i = 0; i < queryArrayM.length; i++){
     allManagers[i] = queryArrayM[i].first_name + ", " + queryArrayM[i].last_name;
     managerIDs[i] = queryArrayM[i].id;
 };
+console.log(`Length of allManagers: ${allManagers.length}`); //it's 0?!?
 // -----------------------------------------------------------------------------------------------
 function addRole(): void {
     
@@ -298,26 +300,51 @@ function deleteEmployee(): void {
         }else{
             // I want to pull from employeeIds where the id matches the selected name
             console.log(`The response: ${response}, ${typeof response}`); //type object
-            // time tto cookkkkk
-            pool.query(`SELECT * FROM employees`, (err: Error, result: QueryResult) => {
-                if(err){
-                    console.log(err)
-                }else if(result){
-                    let currentEmployees = result.rows;
-                    console.log(`resultRow length: ${currentEmployees.length}`); //it's 12??? of course it is
+            // time tto cookkkkk--------------------------------------------------currentEmployees was here
+            // pool.query(`SELECT * FROM employees`, (err: Error, result: QueryResult) => {
+            //     if(err){
+            //         console.log(err)
+            //     }else if(result){
+            //         let currentEmployees = result.rows;
+            //         console.log(`resultRow length: ${currentEmployees.length}`); //it's 12??? of course it is
+            //         let recordToDelete = currentEmployees.findIndex(record => `${record.first_name}, ${record.last_name}` === response.employeeDeletion);
                     let recordToDelete = currentEmployees.findIndex(record => `${record.first_name}, ${record.last_name}` === response.employeeDeletion);
-                    console.log(`The index of the person to terminate: ${recordToDelete}`);
-                    console.log(`The first_name of the 12th employee: ${currentEmployees[11].first_name}`);
+            //         console.log(`The index of the person to terminate: ${recordToDelete}`);
+            //         console.log(`The first_name of the last employee: ${currentEmployees[currentEmployees.length-1].first_name}`);
                     IDtoDelete = currentEmployees[recordToDelete].id;
-                    console.log(`The value of IDtoDelete: ${IDtoDelete}`);
-                }
-            })
-            // yea boiii
-            console.log(`Right before the DELETE query, this is IDtoDelete: ${IDtoDelete}`);
-            pool.query(`DELETE FROM employees WHERE id=${IDtoDelete}`, (err: Error, result: QueryResult) => {
+            //         console.log(`The value of IDtoDelete: ${IDtoDelete}`);
+            //         console.log(`Chosen employee: ${response.employeeDeletion} & recordToDelete: ${currentEmployees[recordToDelete].first_name}, ${currentEmployees[recordToDelete].last_name}}`);
+            //     }
+            // })
+            // yea boiii----------------------------------------------------end of currentEmployees query
+
+            // Is this employee table being locked by another process?????
+            pool.query(`SELECT * FROM pg_locks WHERE relation = 'employees'::regclass;`, (err: Error, result: QueryResult) => {
                 if(err){
                     console.log(err);
                 }else if(result){
+                    console.log('Checking to see if any tables are locked...');
+                    console.log(result.rows);
+                };});
+                // There has been a lock granted to pid: 21660 AND the table in question is relation: 19887
+                // Checking which table is 19887
+                pool.query(`SELECT relname FROM pg_class WHERE oid = 19887;`, (err: Error, result: QueryResult) => {
+                    if(err){
+                        console.log(err);
+                    }else if(result){
+                        console.log('Checking to see which table is 19887');
+                        console.log(result.rows);
+                    };});
+            
+            console.log(`Right before the DELETE query, this is IDtoDelete: ${IDtoDelete}`);
+            // ChatGPT recommended parameterized queries
+            pool.query(`DELETE FROM employees WHERE id=$1`, [IDtoDelete], (err: Error, result: QueryResult) => {
+                console.log(`Right AFTER delete query is called, IDtoDelete: ${IDtoDelete}`);
+                if(err){
+                    console.log(`Within the DELETE query's dump, this is IDtoDelete: ${IDtoDelete}`);
+                    console.log(err);
+                }else if(result){
+                    allEmployees.filter(person => person != `${response.employeeDeletion}`);
                     console.log("Record successfully deleted.");
                 };
                 startCli();
@@ -331,6 +358,21 @@ function deleteEmployee(): void {
 // Initial inquirer call
 function startCli(): void {
 
+    pool.query(`SELECT * FROM employees`, (err: Error, result: QueryResult) => {
+        if(err){
+            console.log(err)
+        }else if(result){
+            currentEmployees = result.rows;
+            console.log(`resultRow length: ${currentEmployees.length}`); //it's 12??? of course it is
+            // let recordToDelete = currentEmployees.findIndex(record => `${record.first_name}, ${record.last_name}` === response.employeeDeletion);
+            // console.log(`The index of the person to terminate: ${recordToDelete}`);
+            console.log(`The first_name of the last employee: ${currentEmployees[currentEmployees.length-1].first_name}`);
+            // IDtoDelete = currentEmployees[recordToDelete].id;
+            // console.log(`The value of IDtoDelete: ${IDtoDelete}`);
+            // console.log(`Chosen employee: ${response.employeeDeletion} & recordToDelete: ${currentEmployees[recordToDelete].first_name}, ${currentEmployees[recordToDelete].last_name}}`);
+        }
+    })
+    
     inquirer.prompt([
         {
             type: "list",
