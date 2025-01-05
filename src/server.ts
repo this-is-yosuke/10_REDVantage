@@ -230,7 +230,49 @@ function addEmployee(): void {
         });
     };
 // Nested inquirer calls for UPDATE-ing employees queries
-// function updateEmployee(): void {};
+function updateEmployee(): void {
+    inquirer.prompt([
+        {
+            type: 'list',
+            name: 'chooseEmployee',
+            message: 'Please select an employee to update their role.',
+            choices: allEmployees
+        }
+    ]).then((response1) => {
+        if(response1.chooseEmployee === 'cancel'){
+            console.log("Employee update aborted");
+            startCli();
+        }else{
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'chooseNewRole',
+                    message: 'Please select their new role.',
+                    choices: allRoles
+                }
+            ]).then((response2) => {
+                if(response2.chooseNewRole === 'cancel'){
+                    console.log("Employee update aborted");
+                    startCli();
+                }else{
+                    // Updating an employee's role
+                    // The record variable might be refering to chooseNewRole, rsther than employee
+                    let recordToUpdate = currentEmployees.findIndex(record => `${record.first_name}, ${record.last_name}` === response1.chooseEmployee);
+                    console.log(`Response1: ${response1}; recordToUpdate: ${recordToUpdate}`);
+                    let IDtoUpdate = currentEmployees[recordToUpdate].id;
+                    pool.query(`UPDATE employees SET role_title = '${response2.chooseNewRole}' WHERE employees.id = $1`, [IDtoUpdate], (err: Error, result: QueryResult) => {
+                        if(err){
+                            console.log(err);
+                        }else if(result){
+                            console.log("Record successfully updated.");
+                        };
+                        startCli();
+                    });
+                };
+            });
+        }
+    })
+};
 
 // --------------------------------------------------------------------------
 // DELETE queries start
@@ -438,6 +480,7 @@ function startCli(): void {
                     addEmployee();
                     break;
                 case 'Update an employee':
+                    updateEmployee();
                     break;
                 case 'Delete a department':
                     deleteDepartment();
