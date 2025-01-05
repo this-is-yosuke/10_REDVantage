@@ -406,7 +406,8 @@ function startCli(): void {
                     break;
                     // startCli();
                 case 'Select all roles':
-                    pool.query('SELECT * FROM roles', (err: Error, result: QueryResult) => {
+                    // pool.query('SELECT * FROM roles', (err: Error, result: QueryResult) => {
+                    pool.query('SELECT roles.*, departments.department_name FROM roles INNER JOIN departments ON roles.department_id=departments.id', (err: Error, result: QueryResult) => {
                         if(err){
                             console.log(err);
                         }else if(result) {
@@ -416,7 +417,9 @@ function startCli(): void {
                     });
                     break;
                 case 'Select all employees':
-                    pool.query('SELECT * FROM employees', (err: Error, result: QueryResult) => {
+                    // pool.query('SELECT * FROM employees', (err: Error, result: QueryResult) => {
+                    // Implementing a JOINS clause in order to show emploee salary
+                    pool.query('SELECT employees.*, roles.salary, roles.department_id FROM employees LEFT JOIN roles ON employees.role_title=roles.title', (err: Error, result: QueryResult) => {
                         if(err){
                             console.log(err);
                         }else if (result) {
