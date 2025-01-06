@@ -429,14 +429,14 @@ function startCli(): void {
             type: "list",
             name: "dbQuery",
             message: "Welcome to your content management system! What would you like to do?",
-            choices: ['Select all departments', 'Select all roles', 'Select all employees', 'Add a department',
-                'Add a role', 'Add an employee', 'Update an employee', 'Delete a department', 'Delete a role',
+            choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department',
+                'Add a role', "Add an employee's role", 'Update an employee', 'Delete a department', 'Delete a role',
                 'Delete an employee', 'Exit'],
         }])
         .then((response) => {
             // console.log(`${response.dbQuery}`);
             switch (response.dbQuery) {
-                case 'Select all departments':
+                case 'View all departments':
                     pool.query('SELECT * FROM departments', (err: Error, result: QueryResult) => {
                         if(err){
                             console.log(err);
@@ -447,7 +447,7 @@ function startCli(): void {
                     });
                     break;
                     // startCli();
-                case 'Select all roles':
+                case 'View all roles':
                     // pool.query('SELECT * FROM roles', (err: Error, result: QueryResult) => {
                     pool.query('SELECT roles.*, departments.department_name FROM roles INNER JOIN departments ON roles.department_id=departments.id', (err: Error, result: QueryResult) => {
                         if(err){
@@ -458,7 +458,7 @@ function startCli(): void {
                         startCli();
                     });
                     break;
-                case 'Select all employees':
+                case 'View all employees':
                     // pool.query('SELECT * FROM employees', (err: Error, result: QueryResult) => {
                     // Implementing a JOINS clause in order to show emploee salary
                     pool.query('SELECT employees.*, roles.salary, roles.department_id FROM employees LEFT JOIN roles ON employees.role_title=roles.title', (err: Error, result: QueryResult) => {
@@ -479,7 +479,7 @@ function startCli(): void {
                 case 'Add an employee':
                     addEmployee();
                     break;
-                case 'Update an employee':
+                case "Update an employee's role":
                     updateEmployee();
                     break;
                 case 'Delete a department':
