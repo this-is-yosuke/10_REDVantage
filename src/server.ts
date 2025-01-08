@@ -262,7 +262,6 @@ function deleteDepartment(): void {
                 };
                 let deletedItem = allDepartmentNames.indexOf(response.departmentDeletion);
                 allDepartmentNames.splice(deletedItem, 1);
-                console.log(`allDepartmentNames: ${allDepartmentNames}`);
                 startCli();
             });
         }
