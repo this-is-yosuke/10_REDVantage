@@ -1,5 +1,5 @@
-import express, { application } from 'express';
-import { Client, Connection, Pool, Query, QueryResult } from 'pg';
+import express from 'express';
+import { QueryResult } from 'pg';
 import { pool, connectToDB } from './connection.js';
 import inquirer from 'inquirer';
 
@@ -30,63 +30,25 @@ function addDepartment(): void {
                 }else if(result) {
                     console.log("Data successfully entered!");
                 }
-                // allDepartmentNames.push(response.addDep);
                 allDepartmentNames.push(response.addDep);
                 startCli();
             })
         })
 };
-// Nested inquirer calls for INSERTing into roles queries
-// extra function to store department names
-// const [rows] = pool.query('SELECT * FROM departments');
-// const choices = rows.map(row => ({name: row.name, value: row.id}));
-
-// const [rows];
-// const choices = pool.query('SELECT * FROM departments', (err: Error, result: QueryResult) => {
-//     if(err){
-//         console.log(err);
-//     }else if(result){
-//         rows.map(result.rows);
-//     };
-// })
-
-// let allDepartments;
-// pool.query('SELECT * FROM departments', (err: Error, result: QueryResult) => {
-//     if(err){
-//         console.log(err);
-//     }else if(result){
-//         allDepartments = result.rows;
-//         return allDepartments;
-//     }
-// })
-
-// let allDepartments: QueryResult[] = pool.query('SELECT * FROM departments', (err: Error, result: QueryResult) => {
-//     if(err){
-//         console.log(err);
-//     }else if(result){
-//         allDepartments = result.rows;
-//     }
-// })
 
 //Generating a usable array for the SELECT prompt----------------------------------------------- 
 // Storing DEPARTMENTS in an array
-// Putting this in the addRole() function causes the app to crash. It's a syntax error?
+// Putting this in the addRole() function causes the app to crash.
 let resultD = await pool.query('SELECT * FROM departments');
-// let result = Client.;
-let queryArray = resultD.rows;
-// We can access the column name via queryArray[i].department_name
-console.log(`querryArray: ${queryArray[0].value}, ${queryArray[1].department_name}, and ${queryArray.length}`);
-// console.log(`${queryArray.department_name}`); the property doesn't exist on the array itself
+let queryArrayD = resultD.rows;
 let allDepartmentNames: string[] = [];
 let allDepartmentIDs: number[] = [];
-for(let i = 0; i < queryArray.length; i++){
-    allDepartmentNames[i] = queryArray[i].department_name;
-    allDepartmentIDs[i] = queryArray[i].department_id;
+for(let i = 0; i < queryArrayD.length; i++){
+    allDepartmentNames[i] = queryArrayD[i].department_name;
+    allDepartmentIDs[i] = queryArrayD[i].department_id;
 };
 allDepartmentNames.unshift("cancel");
-console.log(`All departments: ${allDepartmentNames} (I would like a cancel feature)`);
 
-// let depts = await pool.query('SELECT department_name FROM departments');
 // Storing ROLES in an array
 let resultR = await pool.query('SELECT * FROM roles');
 let querryArrayR = resultR.rows;
@@ -97,23 +59,24 @@ for(let i = 0; i < querryArrayR.length; i++){
     roleIDs[i] = querryArrayR[i].id;
 };
 allRoles.unshift("cancel");
-console.log(`All roles: ${allRoles}, and their IDs: ${roleIDs}`);
 
 // Storing ALL employees in an array
 let resultE = await pool.query('SELECT * FROM employees');
 let querryArrayE = resultE.rows;
 let allEmployees: string[] = [];
 let employeeIDs: number[] = [];
+let employeeRoles: string[] = [];
 let IDtoDelete: number; //using in the deleteEmployee method
 let currentEmployees: any[];
 for(let i = 0; i < querryArrayE.length; i++){
     allEmployees[i] = querryArrayE[i].first_name + ", " + querryArrayE[i].last_name;
     employeeIDs[i] = querryArrayE[i].id;
+    employeeRoles[i] = querryArrayE[i].role_title;
 };
 allEmployees.unshift("cancel");
 
 // Storing MANAGERS in an array
-let resultM = await pool.query('SELECT first_name, last_name FROM employees WHERE manager_id=NULL');
+let resultM = await pool.query('SELECT * FROM employees WHERE manager_id IS NULL');
 let queryArrayM = resultM.rows;
 let allManagers : string[] = [];
 let managerIDs: number[] = [];
@@ -121,7 +84,6 @@ for(let i = 0; i < queryArrayM.length; i++){
     allManagers[i] = queryArrayM[i].first_name + ", " + queryArrayM[i].last_name;
     managerIDs[i] = queryArrayM[i].id;
 };
-console.log(`Length of allManagers: ${allManagers.length}`); //it's 0?!?
 // -----------------------------------------------------------------------------------------------
 function addRole(): void {
     
@@ -137,22 +99,18 @@ function addRole(): void {
             message: "What is the role's salary?",
         },
         {
-            // type: "input",
-            // name: "roleDepartment",
-            // message: "Which department does this role belong to?",
             type: "list",
             name: "roleDepartment",
             message: "Which department does this role belong to?",
-            // choices: allDepartments,
             choices: allDepartmentNames,
         }
     ])
     .then((response) => {
-        /* Neither id nor department_id work. ${resonse.roleDepartment} gives an input syntax error in the console. It's expecting an integer, but it
-           recieved a string. The thing is, it needs an array to work. If presented with IDs and names, it throws an error.
+        /* Neither id nor department_id work. ${resonse.roleDepartment} gives an input syntax error in the console.
+           It's expecting an integer, but it recieved a string. The thing is, it needs an array to work. If presented
+           with IDs and names, it throws an error.
            */
           let place = allDepartmentNames.indexOf(response.roleDepartment);
-        console.log(`${response.roleDepartment} is the role department.`);
         pool.query(`INSERT INTO roles(title, salary, department_id) VALUES ('${response.roleTitle}', ${response.roleSalary}, '${place}')`,
             (err: Error, result: QueryResult) => {
                 if(err){
@@ -180,11 +138,6 @@ function addEmployee(): void {
             name: "lastName",
             message: "Please enter the employee's last name.",
         },
-        // {
-        //     type: "input",
-        //     name: "roleID",
-        //     message: "Please enter the employee's role ID.",
-        // }
         {
             type: "select",
             name: "roleTitle",
@@ -198,8 +151,6 @@ function addEmployee(): void {
         }
     ])
     .then((response) => {
-        // let managersIndex = ;
-        // let chosenManager = employeeIDs[managersIndex];
         // Preventing empty strings from being assigned to firstName and lastName
         if(response.firstName === ''|| response.lastName === ''){
             console.log("First name and last name cannot be blank. Please try again.");
@@ -217,7 +168,6 @@ function addEmployee(): void {
                     (err: Error, result: QueryResult) => {
                         if(err){
                             console.log(err);
-                            console.log(`The manager id: ${response.managerID}, type: ${typeof response.managerID}`);
                         }else if(result) {
                             allEmployees.push(response.firstName + ', ' + response.lastName);
                             
@@ -256,18 +206,31 @@ function updateEmployee(): void {
                     startCli();
                 }else{
                     // Updating an employee's role
-                    // The record variable might be refering to chooseNewRole, rsther than employee
                     let recordToUpdate = currentEmployees.findIndex(record => `${record.first_name}, ${record.last_name}` === response1.chooseEmployee);
-                    console.log(`Response1: ${response1}; recordToUpdate: ${recordToUpdate}`);
                     let IDtoUpdate = currentEmployees[recordToUpdate].id;
-                    pool.query(`UPDATE employees SET role_title = '${response2.chooseNewRole}' WHERE employees.id = $1`, [IDtoUpdate], (err: Error, result: QueryResult) => {
-                        if(err){
-                            console.log(err);
-                        }else if(result){
-                            console.log("Record successfully updated.");
-                        };
-                        startCli();
-                    });
+                    /* Using a 3rd prompt to display a list of managers to assign the employee. They can't still be under the
+                       legal team lead if they are now a software developer, can they?*/
+                    inquirer.prompt([
+                        {
+                            type: 'list',
+                            name: 'selectManager',
+                            message: 'Please specify their new manager.',
+                            choices: allManagers
+                        }
+                    ]).then((response3) => {
+                        let newManager = allManagers.findIndex(record => record.includes(response3.selectManager));
+                        let newManagerID = queryArrayM[newManager].id;
+                        // Using a parameterized query
+                        pool.query(`UPDATE employees SET role_title = $1, manager_id = $2 WHERE employees.id = $3`, [response2.chooseNewRole, newManagerID, IDtoUpdate], (err: Error, result: QueryResult) => {
+                            if(err){
+                                console.log(err);
+                            }else if(result){
+                                console.log("Record successfully updated.");
+                            };
+                            startCli();
+                        });
+                    })
+
                 };
             });
         }
@@ -285,9 +248,6 @@ function deleteDepartment(): void {
             choices: allDepartmentNames
         }
     ]).then((response) => {
-        console.log(`From within deleteDepartments(), the response ${response} and the response.departmentDeletion ${response.departmentDeletion}`);
-        // response.departmentDeletion is what the user selects, their choice
-        console.log(`result.departmentDeletion.id? ${response.departmentDeletion.id}`);
         /* response.departmentDeletion.id returns "undefined". Keep in mind that allDepartments is a string[]
            containing only the department names and not their IDs.*/
         if(response.departmentDeletion === "cancel"){
@@ -330,7 +290,6 @@ function deleteRole(): void {
                 }; 
                 let deletedItem = allRoles.indexOf(response.roleDeletion);
                 allRoles.splice(deletedItem, 1);
-                console.log(`allRoles: ${allRoles}`);
                 startCli();
             });
         }
@@ -350,52 +309,16 @@ function deleteEmployee(): void {
             startCli();
         }else{
             // I want to pull from employeeIds where the id matches the selected name
-            console.log(`The response: ${response}, ${typeof response}`); //type object
-            // time tto cookkkkk--------------------------------------------------currentEmployees was here
-            // pool.query(`SELECT * FROM employees`, (err: Error, result: QueryResult) => {
-            //     if(err){
-            //         console.log(err)
-            //     }else if(result){
-            //         let currentEmployees = result.rows;
-            //         console.log(`resultRow length: ${currentEmployees.length}`); //it's 12??? of course it is
-            //         let recordToDelete = currentEmployees.findIndex(record => `${record.first_name}, ${record.last_name}` === response.employeeDeletion);
                     let recordToDelete = currentEmployees.findIndex(record => `${record.first_name}, ${record.last_name}` === response.employeeDeletion);
-            //         console.log(`The index of the person to terminate: ${recordToDelete}`);
-            //         console.log(`The first_name of the last employee: ${currentEmployees[currentEmployees.length-1].first_name}`);
                     IDtoDelete = currentEmployees[recordToDelete].id;
-            //         console.log(`The value of IDtoDelete: ${IDtoDelete}`);
-            //         console.log(`Chosen employee: ${response.employeeDeletion} & recordToDelete: ${currentEmployees[recordToDelete].first_name}, ${currentEmployees[recordToDelete].last_name}}`);
-            //     }
-            // })
-            // yea boiii----------------------------------------------------end of currentEmployees query
-
-            // Is this employee table being locked by another process?????
-            pool.query(`SELECT * FROM pg_locks WHERE relation = 'employees'::regclass;`, (err: Error, result: QueryResult) => {
-                if(err){
-                    console.log(err);
-                }else if(result){
-                    console.log('Checking to see if any tables are locked...');
-                    console.log(result.rows);
-                };});
-                // There has been a lock granted to pid: 21660 AND the table in question is relation: 19887
-                // Checking which table is 19887
-                pool.query(`SELECT relname FROM pg_class WHERE oid = 19887;`, (err: Error, result: QueryResult) => {
-                    if(err){
-                        console.log(err);
-                    }else if(result){
-                        console.log('Checking to see which table is 19887');
-                        console.log(result.rows);
-                    };});
             
-            console.log(`Right before the DELETE query, this is IDtoDelete: ${IDtoDelete}`);
-            // ChatGPT recommended parameterized queries
+            // Using parameterized queries
             pool.query(`DELETE FROM employees WHERE id=$1`, [IDtoDelete], (err: Error, result: QueryResult) => {
-                console.log(`Right AFTER delete query is called, IDtoDelete: ${IDtoDelete}`);
                 if(err){
-                    console.log(`Within the DELETE query's dump, this is IDtoDelete: ${IDtoDelete}`);
                     console.log(err);
                 }else if(result){
-                    allEmployees.filter(person => person != `${response.employeeDeletion}`);
+                    // This removes the deleted name from the selection lists in the CLI
+                    allEmployees = allEmployees.filter(person => person != `${response.employeeDeletion}`);
                     console.log("Record successfully deleted.");
                 };
                 startCli();
@@ -409,18 +332,12 @@ function deleteEmployee(): void {
 // Initial inquirer call
 function startCli(): void {
 
+    // This query is important because without it, the selection options would not contain freshly entered data!
     pool.query(`SELECT * FROM employees`, (err: Error, result: QueryResult) => {
         if(err){
             console.log(err)
         }else if(result){
             currentEmployees = result.rows;
-            console.log(`resultRow length: ${currentEmployees.length}`); //it's 12??? of course it is
-            // let recordToDelete = currentEmployees.findIndex(record => `${record.first_name}, ${record.last_name}` === response.employeeDeletion);
-            // console.log(`The index of the person to terminate: ${recordToDelete}`);
-            console.log(`The first_name of the last employee: ${currentEmployees[currentEmployees.length-1].first_name}`);
-            // IDtoDelete = currentEmployees[recordToDelete].id;
-            // console.log(`The value of IDtoDelete: ${IDtoDelete}`);
-            // console.log(`Chosen employee: ${response.employeeDeletion} & recordToDelete: ${currentEmployees[recordToDelete].first_name}, ${currentEmployees[recordToDelete].last_name}}`);
         }
     })
     
@@ -430,11 +347,10 @@ function startCli(): void {
             name: "dbQuery",
             message: "Welcome to your content management system! What would you like to do?",
             choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department',
-                'Add a role', "Add an employee's role", 'Update an employee', 'Delete a department', 'Delete a role',
+                'Add a role', 'Add an employee', "Update an employee's role", 'Delete a department', 'Delete a role',
                 'Delete an employee', 'Exit'],
         }])
         .then((response) => {
-            // console.log(`${response.dbQuery}`);
             switch (response.dbQuery) {
                 case 'View all departments':
                     pool.query('SELECT * FROM departments', (err: Error, result: QueryResult) => {
@@ -446,9 +362,8 @@ function startCli(): void {
                         startCli();
                     });
                     break;
-                    // startCli();
                 case 'View all roles':
-                    // pool.query('SELECT * FROM roles', (err: Error, result: QueryResult) => {
+                    // Implementing a JOINS clause to also show department names
                     pool.query('SELECT roles.*, departments.department_name FROM roles INNER JOIN departments ON roles.department_id=departments.id', (err: Error, result: QueryResult) => {
                         if(err){
                             console.log(err);
@@ -459,7 +374,6 @@ function startCli(): void {
                     });
                     break;
                 case 'View all employees':
-                    // pool.query('SELECT * FROM employees', (err: Error, result: QueryResult) => {
                     // Implementing a JOINS clause in order to show emploee salary
                     pool.query('SELECT employees.*, roles.salary, roles.department_id FROM employees LEFT JOIN roles ON employees.role_title=roles.title', (err: Error, result: QueryResult) => {
                         if(err){
@@ -493,8 +407,6 @@ function startCli(): void {
                     break;
                 default:
                     console.log("Have a nice day!");
-                //    process.abort(); works, BUT generates a stack trace in the console
-                    // process.disconnect(); not a function?
                     process.exit();
             }
         });
