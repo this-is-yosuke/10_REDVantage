@@ -21,7 +21,7 @@ You can clone the repo here https://github.com/this-is-yosuke/10_REDVantage
 
 ## 2. Usage
 
-You will need both Typescript and Postgres. You can find a demonstration of the app here https://drive.google.com/file/d/1JwPex8MD_j7Z0cWAGZvCq0s9GqHr5TMY/view. This screenshot shows the app's appearance and functionality ![1736379119422](image/README/1736379119422.png)
+You will need both Typescript and Postgres. You can find a demonstration of the app here https://drive.google.com/file/d/1JwPex8MD_j7Z0cWAGZvCq0s9GqHr5TMY/view. This screenshot shows the app's appearance and functionality ![REDVantage_snapshot](assets/REDVantage_snapshot.png)
 
 
 ## 3. License
